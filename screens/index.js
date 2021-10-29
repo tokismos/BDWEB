@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   StyleSheet,
   Text,
@@ -7,9 +7,11 @@ import {
   TouchableOpacity,
   Dimensions,
   Button,
+  ScrollView,
 } from "react-native";
 import { RadioButton, TextInput } from "react-native-paper";
-import { AntDesign } from "@expo/vector-icons";
+import IngredientComponent from "../components/IngredientComponent";
+import RightSide from "../components/rightSide";
 
 const DifficultyComponent = () => {
   const [difficulte, setDifficulte] = React.useState("");
@@ -43,7 +45,15 @@ const DifficultyComponent = () => {
           width: "80%",
         }}
       >
-        <View style={{ alignItems: "center", justifyContent: "center" }}>
+        <TouchableOpacity
+          style={{
+            alignItems: "center",
+            justifyContent: "center",
+            backgroundColor: "blue",
+            padding: 10,
+          }}
+          onPress={() => setDifficulte("Facile")}
+        >
           <Text>Facile</Text>
 
           <RadioButton
@@ -51,8 +61,16 @@ const DifficultyComponent = () => {
             status={difficulte === "Facile" ? "checked" : "unchecked"}
             onPress={() => setDifficulte("Facile")}
           />
-        </View>
-        <View style={{ alignItems: "center", justifyContent: "center" }}>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={{
+            alignItems: "center",
+            justifyContent: "center",
+            backgroundColor: "blue",
+            padding: 10,
+          }}
+          onPress={() => setDifficulte("Moyenne")}
+        >
           <Text>Moyenne</Text>
 
           <RadioButton
@@ -60,8 +78,16 @@ const DifficultyComponent = () => {
             status={difficulte === "Moyenne" ? "checked" : "unchecked"}
             onPress={() => setDifficulte("Moyenne")}
           />
-        </View>
-        <View style={{ alignItems: "center", justifyContent: "center" }}>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={{
+            alignItems: "center",
+            justifyContent: "center",
+            backgroundColor: "blue",
+            padding: 10,
+          }}
+          onPress={() => setDifficulte("Difficile")}
+        >
           <Text>Difficile</Text>
 
           <RadioButton
@@ -69,59 +95,29 @@ const DifficultyComponent = () => {
             status={difficulte === "Difficile" ? "checked" : "unchecked"}
             onPress={() => setDifficulte("Difficile")}
           />
-        </View>
+        </TouchableOpacity>
       </View>
     </View>
   );
 };
 const { width, height } = Dimensions.get("window");
+
+let arrayIngredients = [
+  {
+    name: "",
+    quantity: "",
+  },
+];
 const index = () => {
-  let arrayIngredients = [{ name: "s", quantity: "qqqqq" }];
-  const [nbrArray, setNbrArray] = useState([""]);
   const [imageURL, setImageURL] = React.useState("");
   const [name, setName] = React.useState("");
-  //const [ingredients, setIngredients] = React.useState("");
-  const [ingredients, setIngredients] = React.useState("");
+
   const [etapes, setEtapes] = React.useState("");
-  const [checked, setChecked] = React.useState("first");
-
-  const IngredientsComponents = ({ index }) => {
-    const [ingredientValue, setIngredientValue] = useState([""]);
-    const [teext, setText] = useState("");
-    //   const [ingredients, setIngredients] = useState([""]);
-    const [quantityValue, setQuantityValue] = useState("");
-
-    return (
-      <View style={{ backgroundColor: "gray", flexDirection: "row" }}>
-        <View style={{ width: "100%" }}>
-          <View style={{ flexDirection: "row", marginVertical: 5 }}>
-            <TextInput
-              label="Ingredient"
-              value={arrayIngredients[index].name}
-              onChangeText={(text) => {
-                console.log("text", text);
-                arrayIngredients[index].name = [
-                  ...arrayIngredients[index].name,
-                  text,
-                ];
-              }}
-              style={([styles.url], { width: "80%", marginHorizontal: 5 })}
-            />
-            <TextInput
-              label="Qt."
-              value={arrayIngredients[index].quantity}
-              onChangeText={(text) => {
-                console.log("text", text);
-                arrayIngredients[index].quantity = text;
-              }}
-              style={([styles.url], { width: "20%" })}
-            />
-          </View>
-        </View>
-      </View>
-    );
+  const [nbrArray, setNbrArray] = useState([""]);
+  const addInput = () => {
+    setNbrArray([...nbrArray, ""]);
+    arrayIngredients.push({ name: "", quantity: "" });
   };
-
   return (
     <View style={styles.container}>
       <View
@@ -164,30 +160,33 @@ const index = () => {
       </View>
       {/* Right Side View */}
       <View style={styles.rightContainer}>
-        <View style={{ flexDirection: "row" }}>
-          <View style={{ width: "85%" }}>
-            {nbrArray.map((item, index) => (
-              <IngredientsComponents key={index} index={index} />
-            ))}
-          </View>
-          <View style={styles.addButtonContainer}>
-            <TouchableOpacity
-              onPress={() => {
-                // setNbrArray([...nbrArray, ""])
-              }}
-              style={styles.addButton}
-            >
-              <AntDesign name="plus" size={30} color="white" />
-            </TouchableOpacity>
-          </View>
-        </View>
-        <Button
-          title="test"
-          onPress={() => {
-            arrayIngredients[0].name = "hiii";
-            console.log("tjos s", arrayIngredients[0].name);
+        <ScrollView style={{ height: "70%" }}>
+          <RightSide
+            nbrArray={nbrArray}
+            arrayIngredients={arrayIngredients}
+            addInput={addInput}
+          />
+        </ScrollView>
+        <View
+          style={{
+            height: "10%",
+            backgroundColor: "red",
+            alignItems: "center",
+            justifyContent: "center",
           }}
-        />
+        >
+          <TouchableOpacity
+            style={{
+              backgroundColor: "orange",
+              height: "90%",
+              width: "90%",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Text style={{}}>Add To DataBase</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );
@@ -197,7 +196,7 @@ export default index;
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    height: "100%",
     width: "100%",
     alignItems: "center",
     flexDirection: "row",
@@ -213,25 +212,11 @@ const styles = StyleSheet.create({
     height: height * 0.3,
     width: "90%",
   },
-  addButton: {
-    backgroundColor: "black",
-    height: "100%",
-    width: "100%",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  addButtonContainer: {
-    width: "15%",
-    padding: 10,
-    marginLeft: 5,
-    alignSelf: "flex-end",
-    height: 70,
-  },
+
   rightContainer: {
     width: "30%",
     height: "100%",
     backgroundColor: "yellow",
-    justifyContent: "center",
   },
 });
 
