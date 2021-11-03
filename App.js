@@ -3,11 +3,15 @@ import React from "react";
 import { StyleSheet, Text, View } from "react-native";
 import MainScreen from "./screens";
 
+import { ToastProvider } from "react-native-toast-notifications";
+
 export default function App() {
   return (
-    <View style={styles.container}>
-      <MainScreen />
-    </View>
+    <ToastProvider>
+      <View style={styles.container}>
+        <MainScreen />
+      </View>
+    </ToastProvider>
   );
 }
 

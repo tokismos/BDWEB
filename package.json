@@ -17,6 +17,8 @@
     "react-native-element-dropdown": "^1.4.6",
     "react-native-paper": "^4.9.2",
     "react-native-select-dropdown": "^1.2.0",
+    "react-native-toast-message": "^1.6.0",
+    "react-native-toast-notifications": "^3.2.2",
     "react-native-web": "^0.17.5"
   },
   "devDependencies": {

@@ -8,6 +8,8 @@ import {
   Dimensions,
   ScrollView,
 } from "react-native";
+import Toast from "react-native-toast-message";
+
 import { RadioButton, TextInput } from "react-native-paper";
 import IngredientComponent from "../components/IngredientComponent";
 import RightSide from "../components/rightSide";
@@ -15,6 +17,7 @@ const { width, height } = Dimensions.get("window");
 import axios from "axios";
 import { db } from "../axios";
 import LeftSide from "../components/LeftSide";
+import { useToast } from "react-native-toast-notifications";
 const DifficultyComponent = ({ difficulty, setDifficulty }) => {
   return (
     <View style={styles.difficultyContainer}>
@@ -70,14 +73,29 @@ let arrayIngredients = [
   },
 ];
 const index = () => {
-  const [imageURL, setImageURL] = React.useState("");
+  const toast = useToast();
+
+  const [imageURL, setImgURL] = React.useState("");
   const [name, setName] = React.useState("");
   const [difficulty, setDifficulty] = React.useState("");
+  const [ingredients, setIngredients] = React.useState([
+    {
+      name: "",
+      quantity: "",
+    },
+  ]);
 
   const [steps, setSteps] = React.useState("");
+  const [msg, setMsg] = React.useState("");
   const [nbrArray, setNbrArray] = useState([""]);
   const scrollViewRef = useRef();
-
+  const showRecipe = (imgURL, name, difficulty, steps, ingredients) => {
+    setImgURL(imgURL);
+    setName(name);
+    setDifficulty(difficulty);
+    setSteps(steps.toString());
+    arrayIngredients = ingredients;
+  };
   const addRecipe = async (imgURL, name, difficulty, steps, ingredients) => {
     const stepsToArray = steps.split(/\r?\n/);
     const stepsWithoutSpace = stepsToArray.filter(
@@ -95,9 +113,11 @@ const index = () => {
     // console.log("steps", steps);
     // console.log("in", ingredients);
     try {
-      db.post("/add", res);
+      db.post("/add", res).then((resp) => {
+        console.log("resp", resp.status);
+      });
     } catch (e) {
-      console.log(e);
+      console.log("Message", e);
     }
   };
 
@@ -108,10 +128,13 @@ const index = () => {
   return (
     <View style={styles.container}>
       {/* LEFT SIDE */}
-      <View style={{ backgroundColor: "blue", width: "25%", height: "100%" }}>
-        <LeftSide />
+      <View
+        style={{ backgroundColor: "#D3D3D3", width: "25%", height: "100%" }}
+      >
+        <LeftSide showRecipe={showRecipe} />
       </View>
       <View style={{ width: "45%", alignItems: "center" }}>
+        {msg && <Text style={{ fontSize: 20 }}>{msg}</Text>}
         <View style={styles.imgContainer}>
           <Image
             style={{ width: "100%", height: "100%" }}
@@ -124,7 +147,7 @@ const index = () => {
         <TextInput
           label="Image URL"
           value={imageURL}
-          onChangeText={setImageURL}
+          onChangeText={setImgURL}
           style={styles.url}
         />
         <TextInput
@@ -159,6 +182,7 @@ const index = () => {
           }
         >
           <RightSide
+            ingredients={ingredients}
             nbrArray={nbrArray}
             arrayIngredients={arrayIngredients}
             addInput={addInput}
@@ -189,12 +213,12 @@ const styles = StyleSheet.create({
     flexDirection: "row",
   },
   imgContainer: {
-    backgroundColor: "yellow",
+    borderWidth: 1,
     height: "200px",
     width: "200px",
     alignSelf: "center",
   },
-  url: { alignSelf: "center" },
+  url: { alignSelf: "center", width: "70%", margin: 5 },
   multiLine: {
     height: height * 0.3,
     width: "90%",
@@ -203,14 +227,13 @@ const styles = StyleSheet.create({
   rightContainer: {
     width: "30%",
     height: "100%",
-    backgroundColor: "yellow",
+    backgroundColor: "#d3d3d3",
   },
   difficultyContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
     width: "70%",
     alignItems: "center",
-    backgroundColor: "red",
   },
   difficultyText: {
     fontWeight: "bold",
@@ -226,12 +249,10 @@ const styles = StyleSheet.create({
   difficultyItemsTouchable: {
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "blue",
     padding: 10,
   },
   buttonContainer: {
     height: height * 0.1,
-    backgroundColor: "red",
     alignItems: "center",
     justifyContent: "center",
   },
