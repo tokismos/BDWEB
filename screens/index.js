@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   StyleSheet,
   Text,
@@ -6,101 +6,62 @@ import {
   Image,
   TouchableOpacity,
   Dimensions,
-  Button,
   ScrollView,
 } from "react-native";
 import { RadioButton, TextInput } from "react-native-paper";
 import IngredientComponent from "../components/IngredientComponent";
 import RightSide from "../components/rightSide";
-
-const DifficultyComponent = () => {
-  const [difficulte, setDifficulte] = React.useState("");
-
+const { width, height } = Dimensions.get("window");
+import axios from "axios";
+import { db } from "../axios";
+import LeftSide from "../components/LeftSide";
+const DifficultyComponent = ({ difficulty, setDifficulty }) => {
   return (
-    <View
-      style={{
-        flexDirection: "row",
-        justifyContent: "space-between",
-        width: "70%",
-        alignItems: "center",
-        backgroundColor: "red",
-      }}
-    >
+    <View style={styles.difficultyContainer}>
       <View style={{ width: "20%" }}>
-        <Text
-          style={{
-            fontWeight: "bold",
-            backgroundColor: "white",
-            textAlign: "center",
-            fontSize: 18,
-          }}
-        >
-          Difficulté
-        </Text>
+        <Text style={styles.difficultyText}>Difficulté</Text>
       </View>
-      <View
-        style={{
-          flexDirection: "row",
-          justifyContent: "space-around",
-          width: "80%",
-        }}
-      >
+      <View style={styles.difficultyItemsView}>
         <TouchableOpacity
-          style={{
-            alignItems: "center",
-            justifyContent: "center",
-            backgroundColor: "blue",
-            padding: 10,
-          }}
-          onPress={() => setDifficulte("Facile")}
+          style={styles.difficultyItemsTouchable}
+          onPress={() => setDifficulty("Facile")}
         >
           <Text>Facile</Text>
 
           <RadioButton
             value="facile"
-            status={difficulte === "Facile" ? "checked" : "unchecked"}
-            onPress={() => setDifficulte("Facile")}
+            status={difficulty === "Facile" ? "checked" : "unchecked"}
+            onPress={() => setDifficulty("Facile")}
           />
         </TouchableOpacity>
         <TouchableOpacity
-          style={{
-            alignItems: "center",
-            justifyContent: "center",
-            backgroundColor: "blue",
-            padding: 10,
-          }}
-          onPress={() => setDifficulte("Moyenne")}
+          style={styles.difficultyItemsTouchable}
+          onPress={() => setDifficulty("Moyenne")}
         >
           <Text>Moyenne</Text>
 
           <RadioButton
             value="moyenne"
-            status={difficulte === "Moyenne" ? "checked" : "unchecked"}
-            onPress={() => setDifficulte("Moyenne")}
+            status={difficulty === "Moyenne" ? "checked" : "unchecked"}
+            onPress={() => setDifficulty("Moyenne")}
           />
         </TouchableOpacity>
         <TouchableOpacity
-          style={{
-            alignItems: "center",
-            justifyContent: "center",
-            backgroundColor: "blue",
-            padding: 10,
-          }}
-          onPress={() => setDifficulte("Difficile")}
+          style={styles.difficultyItemsTouchable}
+          onPress={() => setDifficulty("Difficile")}
         >
           <Text>Difficile</Text>
 
           <RadioButton
             value="first"
-            status={difficulte === "Difficile" ? "checked" : "unchecked"}
-            onPress={() => setDifficulte("Difficile")}
+            status={difficulty === "Difficile" ? "checked" : "unchecked"}
+            onPress={() => setDifficulty("Difficile")}
           />
         </TouchableOpacity>
       </View>
     </View>
   );
 };
-const { width, height } = Dimensions.get("window");
 
 let arrayIngredients = [
   {
@@ -111,19 +72,46 @@ let arrayIngredients = [
 const index = () => {
   const [imageURL, setImageURL] = React.useState("");
   const [name, setName] = React.useState("");
+  const [difficulty, setDifficulty] = React.useState("");
 
-  const [etapes, setEtapes] = React.useState("");
+  const [steps, setSteps] = React.useState("");
   const [nbrArray, setNbrArray] = useState([""]);
+  const scrollViewRef = useRef();
+
+  const addRecipe = async (imgURL, name, difficulty, steps, ingredients) => {
+    const stepsToArray = steps.split(/\r?\n/);
+    const stepsWithoutSpace = stepsToArray.filter(
+      //detect the white spaces in a line
+      (item) => item.trim().length != 0
+    );
+
+    const res = {
+      imgURL,
+      name,
+      difficulty,
+      steps: stepsWithoutSpace,
+      ingredients,
+    };
+    // console.log("steps", steps);
+    // console.log("in", ingredients);
+    try {
+      db.post("/add", res);
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
   const addInput = () => {
     setNbrArray([...nbrArray, ""]);
     arrayIngredients.push({ name: "", quantity: "" });
   };
   return (
     <View style={styles.container}>
-      <View
-        style={{ backgroundColor: "blue", width: "25%", height: "100%" }}
-      ></View>
-      <View style={{ width: "45%", alignItems: "center", borderWidth: 1 }}>
+      {/* LEFT SIDE */}
+      <View style={{ backgroundColor: "blue", width: "25%", height: "100%" }}>
+        <LeftSide />
+      </View>
+      <View style={{ width: "45%", alignItems: "center" }}>
         <View style={styles.imgContainer}>
           <Image
             style={{ width: "100%", height: "100%" }}
@@ -146,43 +134,42 @@ const index = () => {
           style={styles.url}
         />
         {/* INGREDIENT VIEW */}
-        <DifficultyComponent />
+        <DifficultyComponent
+          difficulty={difficulty}
+          setDifficulty={setDifficulty}
+        />
         {/* ETAPES VIEW */}
         <View style={styles.multiLine}>
           <TextInput
             multiline
             label="ETAPES DE PREPARATION"
-            value={etapes}
-            onChangeText={setEtapes}
+            value={steps}
+            onChangeText={setSteps}
             style={([styles.url], { height: 200, width: "100%" })}
           />
         </View>
       </View>
       {/* Right Side View */}
       <View style={styles.rightContainer}>
-        <ScrollView style={{ height: "70%" }}>
+        <ScrollView
+          style={{ height: height * 0.9, padding: 5 }}
+          ref={scrollViewRef}
+          onContentSizeChange={() =>
+            scrollViewRef.current.scrollToEnd({ animated: true })
+          }
+        >
           <RightSide
             nbrArray={nbrArray}
             arrayIngredients={arrayIngredients}
             addInput={addInput}
           />
         </ScrollView>
-        <View
-          style={{
-            height: "10%",
-            backgroundColor: "red",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
+        <View style={styles.buttonContainer}>
           <TouchableOpacity
-            style={{
-              backgroundColor: "orange",
-              height: "90%",
-              width: "90%",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
+            style={styles.addButton}
+            onPress={() =>
+              addRecipe(imageURL, name, difficulty, steps, arrayIngredients)
+            }
           >
             <Text style={{}}>Add To DataBase</Text>
           </TouchableOpacity>
@@ -196,7 +183,7 @@ export default index;
 
 const styles = StyleSheet.create({
   container: {
-    height: "100%",
+    height: height - 7,
     width: "100%",
     alignItems: "center",
     flexDirection: "row",
@@ -207,7 +194,7 @@ const styles = StyleSheet.create({
     width: "200px",
     alignSelf: "center",
   },
-  url: { alignSelf: "center", margin: 5 },
+  url: { alignSelf: "center" },
   multiLine: {
     height: height * 0.3,
     width: "90%",
@@ -217,6 +204,43 @@ const styles = StyleSheet.create({
     width: "30%",
     height: "100%",
     backgroundColor: "yellow",
+  },
+  difficultyContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "70%",
+    alignItems: "center",
+    backgroundColor: "red",
+  },
+  difficultyText: {
+    fontWeight: "bold",
+    backgroundColor: "white",
+    textAlign: "center",
+    fontSize: 18,
+  },
+  difficultyItemsView: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    width: "80%",
+  },
+  difficultyItemsTouchable: {
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "blue",
+    padding: 10,
+  },
+  buttonContainer: {
+    height: height * 0.1,
+    backgroundColor: "red",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  addButton: {
+    backgroundColor: "orange",
+    height: "90%",
+    width: "90%",
+    alignItems: "center",
+    justifyContent: "center",
   },
 });
 
