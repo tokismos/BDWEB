@@ -12,7 +12,7 @@ import Toast from "react-native-toast-message";
 
 import { RadioButton, TextInput } from "react-native-paper";
 import IngredientComponent from "../components/IngredientComponent";
-import RightSide from "../components/rightSide";
+import RightSide from "../components/RightSide";
 const { width, height } = Dimensions.get("window");
 import axios from "axios";
 import { db } from "../axios";
