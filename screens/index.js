@@ -16,6 +16,7 @@ import RightSide from "../components/RightSide";
 const { width, height } = Dimensions.get("window");
 import axios from "axios";
 import { db } from "../axios";
+
 import LeftSide from "../components/LeftSide";
 import { useToast } from "react-native-toast-notifications";
 const DifficultyComponent = ({ difficulty, setDifficulty }) => {
