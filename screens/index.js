@@ -8,7 +8,6 @@ import {
   Dimensions,
   ScrollView,
 } from "react-native";
-import Toast from "react-native-toast-message";
 
 import { RadioButton, TextInput } from "react-native-paper";
 import IngredientComponent from "../components/IngredientComponent";
@@ -74,9 +73,8 @@ let arrayIngredients = [
   },
 ];
 const index = () => {
-  const toast = useToast();
-
   const [imageURL, setImgURL] = React.useState("");
+  const [disabled, setDisabled] = React.useState(false);
   const [name, setName] = React.useState("");
   const [difficulty, setDifficulty] = React.useState("");
   const [ingredients, setIngredients] = React.useState([
@@ -90,6 +88,16 @@ const index = () => {
   const [msg, setMsg] = React.useState("");
   const [nbrArray, setNbrArray] = useState([""]);
   const scrollViewRef = useRef();
+  const resetAll = () => {
+    setImgURL("");
+    setName("");
+    setDifficulty("");
+    setSteps("");
+    arrayIngredients = {
+      name: "",
+      quantity: "",
+    };
+  };
   const showRecipe = (imgURL, name, difficulty, steps, ingredients) => {
     setImgURL(imgURL);
     setName(name);
@@ -114,9 +122,9 @@ const index = () => {
     // console.log("steps", steps);
     // console.log("in", ingredients);
     try {
-      db.post("/add", res).then((resp) => {
-        console.log("resp", resp.status);
-      });
+      db.post("/add", res);
+      //      resetAll();
+      setDisabled(true);
     } catch (e) {
       console.log("Message", e);
     }
@@ -191,7 +199,14 @@ const index = () => {
         </ScrollView>
         <View style={styles.buttonContainer}>
           <TouchableOpacity
-            style={styles.addButton}
+            disabled={disabled}
+            style={{
+              backgroundColor: disabled ? "#e59400" : "orange",
+              height: "90%",
+              width: "90%",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
             onPress={() =>
               addRecipe(imageURL, name, difficulty, steps, arrayIngredients)
             }
@@ -258,7 +273,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   addButton: {
-    backgroundColor: "orange",
     height: "90%",
     width: "90%",
     alignItems: "center",

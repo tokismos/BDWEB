@@ -55,7 +55,7 @@ const LeftSide = ({ showRecipe }) => {
 
   const getRecipes = async () => {
     const res = await db.get("/");
-    setRecipes(res.data);
+    setRecipes(res.data.reverse());
     setisLoading(false);
     console.log("tjhis is res,", res.data);
   };
