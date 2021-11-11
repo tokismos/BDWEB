@@ -8,6 +8,8 @@ import {
   Dimensions,
   ScrollView,
   CheckBox,
+  Button,
+  ActivityIndicator,
 } from "react-native";
 
 import { RadioButton, TextInput } from "react-native-paper";
@@ -16,9 +18,11 @@ import RightSide from "../components/RightSide";
 const { width, height } = Dimensions.get("window");
 import axios from "axios";
 import { db } from "../axios";
+import * as ImagePicker from "expo-image-picker";
 
 import LeftSide from "../components/LeftSide";
 import { useToast } from "react-native-toast-notifications";
+import { addImage } from "../firebase";
 const DifficultyComponent = ({ difficulty, setDifficulty }) => {
   return (
     <View style={styles.difficultyContainer}>
@@ -78,6 +82,7 @@ const CATEGORIES = ["Viande", "Poisson", "Végétarien", "Vegan", "Sans Gluten"]
 
 const index = () => {
   const [imageURL, setImgURL] = React.useState("");
+  const [link, setLink] = React.useState("");
   const [disabled, setDisabled] = React.useState(false);
   const [name, setName] = React.useState("");
   const [nbrPersonne, setNbrPersonne] = React.useState("");
@@ -253,18 +258,65 @@ const index = () => {
     // console.log("steps", steps);
     // console.log("in", ingredients);
     try {
-      db.post("/add", res);
+      const erf = await db.post("/add", res);
+      console.log("erf", erf);
       //      resetAll();
       setDisabled(true);
+      setMsg("ADDED SUCCESSFULY");
     } catch (e) {
+      setDisabled(false);
+      setMsg("ERROR, NOT ADDED");
       console.log("Message", e);
     }
   };
-
+  useEffect(() => {
+    if (msg != "ADDED SUCCESSFULY") {
+      setTimeout(() => {
+        setMsg("");
+      }, 3000);
+    }
+  }, [msg]);
   const addInput = () => {
     setNbrArray([...nbrArray, ""]);
     arrayIngredients.push({ name: "", quantity: "" });
   };
+
+  const pickImage = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 1,
+    });
+
+    console.log(result);
+
+    if (!result.cancelled) {
+      setImgURL(result.uri);
+    }
+  };
+  useEffect(() => {
+    if (link != "") {
+      addRecipe(
+        link,
+        name,
+        difficulty,
+        steps,
+        nbrPersonne,
+        tempsCuisson,
+        tempsPreparation,
+        arrayIngredients,
+        four,
+        microOnde,
+        mixeur,
+        robotCuiseur,
+        friteuse,
+        isMeat,
+        isFish,
+        isVegetarien,
+        isVegan,
+        isNoGluten
+      );
+    }
+  }, [link]);
   return (
     <View style={styles.container}>
       {/* LEFT SIDE */}
@@ -273,23 +325,31 @@ const index = () => {
       >
         <LeftSide showRecipe={showRecipe} />
       </View>
-      <View style={{ width: "45%", alignItems: "center" }}>
+      <View
+        style={{
+          width: "45%",
+          alignItems: "center",
+          height: "100%",
+        }}
+      >
         {msg && <Text style={{ fontSize: 20 }}>{msg}</Text>}
         <View style={styles.imgContainer}>
           <Image
-            style={{ width: "100%", height: "100%" }}
+            style={{ aspectRatio: 1 }}
             source={{
               uri: imageURL,
             }}
-            resizeMode="cover"
+            resizeMode="contain"
           />
         </View>
-        <TextInput
+        {/* <TextInput
           label="Image URL"
           value={imageURL}
           onChangeText={setImgURL}
           style={styles.url}
-        />
+        /> */}
+
+        <Button title="Parcourir" onPress={pickImage} />
         <TextInput
           label="Nom de la recette"
           value={name}
@@ -366,30 +426,21 @@ const index = () => {
               alignItems: "center",
               justifyContent: "center",
             }}
-            onPress={() =>
-              addRecipe(
-                imageURL,
-                name,
-                difficulty,
-                steps,
-                nbrPersonne,
-                tempsCuisson,
-                tempsPreparation,
-                arrayIngredients,
-                four,
-                microOnde,
-                mixeur,
-                robotCuiseur,
-                friteuse,
-                isMeat,
-                isFish,
-                isVegetarien,
-                isVegan,
-                isNoGluten
-              )
-            }
+            onPress={async () => {
+              setDisabled(true);
+              await addImage(name, imageURL, setLink);
+            }}
           >
-            <Text style={{}}>Add To DataBase</Text>
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              {disabled && <ActivityIndicator size={"large"} color="white" />}
+              <Text style={{}}>Add To DataBase</Text>
+            </View>
           </TouchableOpacity>
         </View>
       </View>
@@ -410,6 +461,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     height: "200px",
     width: "200px",
+    aspectRatio: 1,
     alignSelf: "center",
   },
   url: { alignSelf: "center", width: "70%", margin: 5 },
